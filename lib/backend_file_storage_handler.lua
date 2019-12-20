@@ -10,13 +10,14 @@ local ngx = ngx
 local string = string
 local concat = table.concat
 local error = error
+local headers = ngx.req.get_headers()
 
 local _M = {}
 
 local function end_backend(self, ctx)
   -- last chunk commited?
   if ctx.range_to + 1 == ctx.range_total then
-    ngx.req.set_header('Content-Type', 'application/x-www-form-urlencoded')
+    ngx.req.set_header(headers['content-type'] or 'application/octet-stream')
     return ngx.location.capture(self.backend, {
         method = ngx.HTTP_POST,
         body = ngx.encode_args({
