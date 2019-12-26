@@ -26,7 +26,8 @@ local function end_backend(self, ctx)
           path = ctx.file_path,
           name = ctx.get_name(),
           checksum = ctx.checksum,
-          sha1 = ctx.sha1
+          sha1 = ctx.sha1,
+          uri = ngx.var.uri
         })
     })
   end
