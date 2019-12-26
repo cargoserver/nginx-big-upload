@@ -44,6 +44,14 @@ local function report_result(info)
   end
 end
 
+local headers = ngx.req.get_headers()
+local content_length = tonumber(headers["content-length"])
+if content_length == 0 then
+  ngx.log(ngx.ERR, "Invalid content length")
+  ngx.status = 400
+  return ngx.ERROR
+end
+
 local reqp = require "request_processor"
 local err
 local handlers = {}
