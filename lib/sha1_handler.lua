@@ -44,8 +44,8 @@ end
 local function shactx_from_file(file_path)
   local inp = io.open(file_path..'.shactx', "rb")
   if inp then
-    file_size = tonumber(inp:read("*line"))
-    file_data = inp:read("*all")
+    local file_size = tonumber(inp:read("*line"))
+    local file_data = inp:read("*all")
     assert(inp:close())
     -- ffi.copy(file_data, shactx, 96)
     return file_size, ffi.cast("SHA_CTX*", file_data)

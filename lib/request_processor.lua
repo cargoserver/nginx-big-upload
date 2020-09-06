@@ -115,6 +115,25 @@ function _M.new(self, handlers)
       return nil, "Configuration error: no handlers defined"
     end
 
+    -- check our redis based limits configured via the session id
+    local redis = require "resty.redis"
+    local resty_url = require 'resty.url'
+    local redis_client = redis:new()
+    local redis_url = resty_url.parse(os.getenv('REDIS_URL') or 'redis://127.0.0.1:6379')
+    local ok, err = redis_client:connect(redis_url.host, redis_url.port)
+    if not ok then
+      ngx.log(ngx.WARN, string.format("Can not connect to redis at %s:%d %s", redis_url.host, redis_url.port, err))
+      return nil, {412, "Can not connect to redis"}
+    end
+
+    local redis_key = string.format("chunked.uploads.%s", session_id)
+    local expected_size, err = redis_client:hget(redis_key, "size")
+    if (not expected_size) or expected_size == ngx.null then
+      return nil, {412, "Invalid session provided"}
+    end
+    redis_client:close()
+    ctx.expected_size = tonumber(expected_size)
+
     -- Name can be send with each chunk but it is really needed for the last one.
     ctx.get_name = function()
       local content_disposition = headers['Content-Disposition']
