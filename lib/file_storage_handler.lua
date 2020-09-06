@@ -46,6 +46,16 @@ local function init_file(self, ctx)
     return concat({"Failed to open file ", file_path})
   end
   self.file = file
+
+  -- check size
+  if ctx.range_to > ctx.expected_size then
+    file:close()
+    os.remove(file_path)
+    ngx.log(ngx.WARN, string.format("chunked upload for session %s tried to upload %d bytes, allowed are %d bytes",
+      ctx.id, ctx.range_to, ctx.expected_size))
+    return {412, "You appear to upload more data then agreed upon"}
+  end
+
 end
 
 local function close_file(self)
